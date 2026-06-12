@@ -1,0 +1,12 @@
+{
+  "name": "ms2-geolocalizacion",
+  "version": "1.0.0",
+  "description": "MS2 — Geolocalización de alertas C5",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2"
+  }
+}
