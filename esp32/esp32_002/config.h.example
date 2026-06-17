@@ -1,0 +1,27 @@
+// ─────────────────────────────────────────
+// Configuración del ESP32-002
+// Copiar este archivo como config.h y ajustar los valores
+// NO subir config.h a Git (ya está en .gitignore)
+// ─────────────────────────────────────────
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// ─── WiFi ───
+#define WIFI_SSID     "TU_SSID_AQUI"
+#define WIFI_PASSWORD "TU_PASSWORD_AQUI"
+
+// ─── MQTT Broker ───
+#define MQTT_BROKER   "192.168.x.x"   // IP de la máquina donde corre Docker
+#define MQTT_PORT     1883
+
+// ─── Dispositivo ───
+#define DEVICE_ID     "ESP32-002"
+#define MQTT_TOPIC    "alerts/panic/ESP32-002"
+#define LAT           19.915919
+#define LON           -99.580926
+
+// ─── Hardware ───
+#define BUTTON_PIN    15
+
+#endif
