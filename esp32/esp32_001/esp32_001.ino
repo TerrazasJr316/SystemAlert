@@ -3,30 +3,23 @@
 #include <ArduinoJson.h>
 
 // ─────────────────────────────────────────
-// Configuración WiFi
+// Configuración desde archivo externo
+// Copiar config.h.example → config.h y ajustar valores
 // ─────────────────────────────────────────
-const char* WIFI_SSID     = "QUIMICA INFORMATICA 5";   // Nombre de red a Conectarse
-const char* WIFI_PASSWORD = "Quimica2000";    // Contraseña de red a conectarse
+#include "config.h"
 
 // ─────────────────────────────────────────
-// Configuración MQTT
-// IP de la máquina donde corre Docker
+// Constantes derivadas de config.h
 // ─────────────────────────────────────────
-const char* MQTT_BROKER = "192.168.50.154";
-const int   MQTT_PORT   = 1883;
-const char* MQTT_TOPIC  = "alerts/panic/ESP32-001";
-
-// ─────────────────────────────────────────
-// Identidad y coordenadas del dispositivo
-// ─────────────────────────────────────────
-const char*  DEVICE_ID = "ESP32-001";
-const float  LAT       = 20.0553;
-const float  LON       = -99.3455;
-
-// ─────────────────────────────────────────
-// Pin del botón de pánico
-// ─────────────────────────────────────────
-const int BUTTON_PIN = 15;
+const char* wifi_ssid     = WIFI_SSID;
+const char* wifi_password = WIFI_PASSWORD;
+const char* mqtt_broker   = MQTT_BROKER;
+const int   mqtt_port     = MQTT_PORT;
+const char* mqtt_topic    = MQTT_TOPIC;
+const char* device_id     = DEVICE_ID;
+const float lat           = LAT;
+const float lon           = LON;
+const int   button_pin    = BUTTON_PIN;
 
 // ─────────────────────────────────────────
 // Variables de control
@@ -43,11 +36,11 @@ const unsigned long DEBOUNCE_MS = 300;  // evita múltiples envíos por un solo 
 // ─────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(button_pin, INPUT_PULLUP);
 
   connectWiFi();
 
-  mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+  mqttClient.setServer(mqtt_broker, mqtt_port);
   mqttClient.setKeepAlive(60);
   connectMQTT();
 }
@@ -63,7 +56,7 @@ void loop() {
   mqttClient.loop();
 
   // Leer botón
-  bool currentState = digitalRead(BUTTON_PIN);
+  bool currentState = digitalRead(button_pin);
 
   if (currentState == LOW && lastButtonState == HIGH) {
     unsigned long now = millis();
@@ -83,9 +76,9 @@ void loop() {
 void publishAlert() {
   StaticJsonDocument<256> doc;
 
-  doc["device_id"]      = DEVICE_ID;
-  doc["lat"]            = LAT;
-  doc["lon"]            = LON;
+  doc["device_id"]      = device_id;
+  doc["lat"]            = lat;
+  doc["lon"]            = lon;
   doc["timestamp"]      = millis() / 1000;  // segundos desde boot
   doc["emergency_type"] = "panico";
   doc["description"]    = "boton de panico activado";
@@ -93,7 +86,7 @@ void publishAlert() {
   char payload[256];
   serializeJson(doc, payload);
 
-  bool ok = mqttClient.publish(MQTT_TOPIC, payload, false);
+  bool ok = mqttClient.publish(mqtt_topic, payload, false);
 
   if (ok) {
     Serial.println("✓ Alerta publicada:");
@@ -108,9 +101,9 @@ void publishAlert() {
 // ─────────────────────────────────────────
 void connectWiFi() {
   Serial.print("Conectando a WiFi: ");
-  Serial.println(WIFI_SSID);
+  Serial.println(wifi_ssid);
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(wifi_ssid, wifi_password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -129,7 +122,7 @@ void connectMQTT() {
   while (!mqttClient.connected()) {
     Serial.print("Conectando a MQTT broker...");
 
-    String clientId = String(DEVICE_ID) + "-" + String(millis());
+    String clientId = String(device_id) + "-" + String(millis());
 
     if (mqttClient.connect(clientId.c_str())) {
       Serial.println(" conectado");
