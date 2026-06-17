@@ -5,14 +5,14 @@
 // ─────────────────────────────────────────
 // Configuración WiFi
 // ─────────────────────────────────────────
-const char* WIFI_SSID     = "QUIMICA INFORMATICA 5";   // Nombre de red a Conectarse
-const char* WIFI_PASSWORD = "Quimica2000";    // Contraseña de red a conectarse
+const char* WIFI_SSID     = "SpaceX";       // cambia esto
+const char* WIFI_PASSWORD = "Isic2026??$";  // cambia esto
 
 // ─────────────────────────────────────────
 // Configuración MQTT
 // IP de la máquina donde corre Docker
 // ─────────────────────────────────────────
-const char* MQTT_BROKER = "192.168.50.154";
+const char* MQTT_BROKER = "192.168.2.80";  // cambia esto por la IP de tu máquina
 const int   MQTT_PORT   = 1883;
 const char* MQTT_TOPIC  = "alerts/panic/ESP32-001";
 
@@ -20,8 +20,8 @@ const char* MQTT_TOPIC  = "alerts/panic/ESP32-001";
 // Identidad y coordenadas del dispositivo
 // ─────────────────────────────────────────
 const char*  DEVICE_ID = "ESP32-001";
-const float  LAT       = 20.0553;
-const float  LON       = -99.3455;
+const float  LAT       = 19.958048959579603;
+const float  LON       = -99.53317718313082;
 
 // ─────────────────────────────────────────
 // Pin del botón de pánico
@@ -38,6 +38,11 @@ bool  lastButtonState = HIGH;  // pullup interno: HIGH = no presionado
 unsigned long lastPublishTime = 0;
 const unsigned long DEBOUNCE_MS = 300;  // evita múltiples envíos por un solo press
 
+// Prototipos de funciones
+void connectWiFi();
+void connectMQTT();
+void publishAlert();
+
 // ─────────────────────────────────────────
 // Setup
 // ─────────────────────────────────────────
@@ -49,6 +54,7 @@ void setup() {
 
   mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
   mqttClient.setKeepAlive(60);
+  mqttClient.setSocketTimeout(30);
   connectMQTT();
 }
 
@@ -65,6 +71,7 @@ void loop() {
   // Leer botón
   bool currentState = digitalRead(BUTTON_PIN);
 
+  // Detectar flanco de bajada (HIGH → LOW = botón presionado)
   if (currentState == LOW && lastButtonState == HIGH) {
     unsigned long now = millis();
     if (now - lastPublishTime > DEBOUNCE_MS) {
@@ -87,7 +94,7 @@ void publishAlert() {
   doc["lat"]            = LAT;
   doc["lon"]            = LON;
   doc["timestamp"]      = millis() / 1000;  // segundos desde boot
-  doc["emergency_type"] = "panico";
+  doc["emergency_type"] = "Incendio";
   doc["description"]    = "boton de panico activado";
 
   char payload[256];

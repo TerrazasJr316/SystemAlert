@@ -5,22 +5,21 @@
 // ─────────────────────────────────────────
 // Configuración WiFi
 // ─────────────────────────────────────────
-const char* WIFI_SSID     = "Net Access - Bibiano";       // cambia esto
-const char* WIFI_PASSWORD = "715620Hqtmv";  // cambia esto
+const char* WIFI_SSID     = "SpaceX";       // cambia esto
+const char* WIFI_PASSWORD = "Isic2026??$";  // cambia esto
 
 // ─────────────────────────────────────────
 // Configuración MQTT
 // IP de la máquina donde corre Docker
 // ─────────────────────────────────────────
-const char* MQTT_BROKER = "192.168.1.103";  // cambia esto por la IP de tu máquina
+const char* MQTT_BROKER = "192.168.2.80";  // cambia esto por la IP de tu máquina
 const int   MQTT_PORT   = 1883;
 const char* MQTT_TOPIC  = "alerts/panic/ESP32-001";
 
 // ─────────────────────────────────────────
 // Identidad y coordenadas del dispositivo
-// Hardcodeadas — coordenadas de Tizayuca, Hidalgo
 // ─────────────────────────────────────────
-const char*  DEVICE_ID = "ESP32-001";
+const char*  DEVICE_ID = "ESP32-002";
 const float  LAT       = 19.915919;
 const float  LON       = -99.580926;
 
@@ -95,7 +94,7 @@ void publishAlert() {
   doc["lat"]            = LAT;
   doc["lon"]            = LON;
   doc["timestamp"]      = millis() / 1000;  // segundos desde boot
-  doc["emergency_type"] = "robo";
+  doc["emergency_type"] = "Robo";
   doc["description"]    = "boton de panico activado";
 
   char payload[256];
