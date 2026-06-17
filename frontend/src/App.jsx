@@ -4,7 +4,7 @@ import MapPanel from "./components/MapPanel.jsx";
 import LiveFeed from "./components/LiveFeed.jsx";
 import HistoryPanel from "./components/HistoryPanel.jsx";
 import TopBar from "./components/TopBar.jsx";
-import "./App.css";
+import StatsBar from "./components/StatsBar.jsx";
 
 // ─────────────────────────────────────────
 // URLs de los servicios — ajustar si el
@@ -41,10 +41,11 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app-shell">
+    <div className="h-screen flex flex-col bg-void overflow-hidden">
       <TopBar connected={connected} />
+      <StatsBar alerts={liveAlerts} connected={connected} />
 
-      <main className="app-main">
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_400px] min-h-0 border-t border-border-hairline">
         <MapPanel
           alerts={liveAlerts}
           selectedAlert={selectedAlert}

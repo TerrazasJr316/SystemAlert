@@ -1,0 +1,46 @@
+# ─────────────────────────────────────────
+# SystemAlert — Git Ignore
+# ─────────────────────────────────────────
+
+# ─── Environment Variables & Credentials ───
+.env
+.env.*
+!.env.example
+config.h
+!config.h.example
+
+# ─── Node.js (Frontend, MS1, MS4, MS5) ───
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# ─── Frontend Build Output ───
+frontend/dist/
+frontend/build/
+.vite/
+
+# ─── Python (MS2) ───
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env/
+env/
+.venv/
+
+# ─── PostgreSQL / Redis Data (Volumes) ───
+postgres-master-data/
+postgres-replica-data/
+redis-data/
+mosquitto-data/
+mosquitto-log/
+
+# ─── OS generated files ───
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

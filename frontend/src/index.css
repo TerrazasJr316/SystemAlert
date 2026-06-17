@@ -1,56 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ─────────────────────────────────────────
-   Token system — C5 Centro de Mando
-   Color: fondo casi-negro azulado, paneles
-   ligeramente más claros, acentos solo para
-   estados de prioridad (nunca decorativos)
+   C5 Centro de Mando — Base layer overrides
 ───────────────────────────────────────── */
-:root {
-  --bg-void: #0b0f14;
-  --bg-panel: #141a23;
-  --bg-panel-raised: #1b232f;
-  --border-hairline: #2a3441;
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-  --text-primary: #e8eaed;
-  --text-secondary: #8b97a8;
-  --text-tertiary: #5a6575;
+  body {
+    @apply bg-void text-gray-200 font-sans text-sm antialiased;
+  }
 
-  --priority-critico: #e0483e;
-  --priority-critico-dim: #e0483e22;
-  --priority-alto: #e0a23e;
-  --priority-alto-dim: #e0a23e22;
-  --priority-medio: #3e8de0;
-  --priority-medio-dim: #3e8de022;
+  ::selection {
+    @apply bg-accent-blue/20;
+  }
 
-  --status-ok: #3eb86a;
+  :focus-visible {
+    @apply outline-2 outline-accent-blue outline-offset-2;
+  }
 
-  --font-mono: "JetBrains Mono", "Courier New", monospace;
-  --font-sans: "Inter", -apple-system, sans-serif;
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-subtle rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@layer components {
+  /* Priority pill badges */
+  .priority-pill {
+    @apply text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1;
+  }
+  .priority-pill--critico {
+    @apply bg-priority-critico-dim text-priority-critico;
+  }
+  .priority-pill--alto {
+    @apply bg-priority-alto-dim text-priority-alto;
+  }
+  .priority-pill--medio {
+    @apply bg-priority-medio-dim text-priority-medio;
+  }
+
+  /* Glass card effect */
+  .glass-card {
+    @apply bg-panel/80 backdrop-blur-xl border border-border-hairline rounded-xl;
+  }
 }
 
-body {
-  background: var(--bg-void);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-  font-size: 14px;
-  -webkit-font-smoothing: antialiased;
+/* ─────────────────────────────────────────
+   Leaflet overrides for dark theme
+───────────────────────────────────────── */
+.leaflet-container {
+  background: #0a0e13 !important;
+}
+.leaflet-tooltip {
+  background: #1a2332 !important;
+  border: 1px solid #2a3a4e !important;
+  color: #e5e7eb !important;
+  border-radius: 10px !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+.leaflet-tooltip::before {
+  display: none !important;
+}
+.leaflet-control-zoom a {
+  background: #1a2332 !important;
+  color: #e5e7eb !important;
+  border-color: #2a3a4e !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #212d3d !important;
 }
 
-::selection {
-  background: var(--priority-medio-dim);
-}
-
-/* Foco de teclado visible — accesibilidad mínima exigible */
-:focus-visible {
-  outline: 2px solid var(--priority-medio);
-  outline-offset: 2px;
-}
-
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
