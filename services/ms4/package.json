@@ -1,0 +1,13 @@
+{
+  "name": "ms4-notificaciones",
+  "version": "1.0.0",
+  "description": "MS4 — Notificaciones en tiempo real C5",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "socket.io": "^4.7.5"
+  }
+}

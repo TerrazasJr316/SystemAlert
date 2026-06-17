@@ -1,0 +1,13 @@
+{
+  "name": "ms3-prioridad",
+  "version": "1.0.0",
+  "description": "MS3 — Asignación de prioridad C5 (servidor gRPC)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.4",
+    "@grpc/proto-loader": "^0.7.12"
+  }
+}
