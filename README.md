@@ -95,7 +95,7 @@ docker-compose down
 |----------|-----|--------|
 | **Dashboard** | http://localhost:5173 | 5173 |
 | **API (MS5)** | http://localhost:5000 | 8080 |
-| **WebSocket (MS4)** | ws://localhost:5004 | 5004 |
+| **WebSocket (MS4)** | ws://localhost:400 | 8080 |
 | **MQTT** | mosquitto:1883 | 1883 |
 | **PostgreSQL** | localhost:5432 | 5432 |
 | **Redis** | localhost:6379 | 6379 |
