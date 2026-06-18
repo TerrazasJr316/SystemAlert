@@ -104,8 +104,6 @@ docker-compose down
 
 ## 📚 Documentación Detallada
 
-**Lee primero:** [docs/README.md](./docs/README.md)
-
 Luego accede a:
 - 🖥️ **[Frontend](./docs/frontend/README.md)** - Dashboard
 - ⚙️ **[Backend](./docs/backend/README.md)** - Microservicios
