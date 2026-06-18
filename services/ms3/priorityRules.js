@@ -8,13 +8,13 @@
 // según severidad esperada del incidente.
 
 const priorityRules = {
-  "panico":      "critico",
-  "robo":        "critico",
-  "agresion":    "critico",
-  "accidente":   "alto",
-  "incendio":    "alto",
-  "sospechoso":  "medio",
-  "ruido":       "medio",
+  "secuestro": "critico",
+  "robo": "alto",
+  "agresion": "medio",
+  "accidente": "alto",
+  "incendio": "critico",
+  "sospechoso": "medio",
+  "ruido": "medio",
 };
 
 // Prioridad por defecto si el tipo no está en el diccionario
