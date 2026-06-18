@@ -44,3 +44,24 @@ mosquitto-log/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# ─── Configuración local ESP32 ───
+esp32/*/config.h
+
+# ─── Node ───
+node_modules/
+package-lock.json
+
+# ─── Python ───
+__pycache__/
+*.pyc
+
+# ─── Docker ───
+postgres-master-data/
+postgres-replica-data/
+
+# ─── IDE ───
+.vscode/
+.idea/
+*.swp
+*.swo

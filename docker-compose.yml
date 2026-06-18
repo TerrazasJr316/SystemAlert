@@ -21,7 +21,7 @@ services:
     container_name: c5-mosquitto
     restart: unless-stopped
     ports:
-      - "1883:1883"
+      - "${MQTT_PORT}:1883"
       - "9001:9001"
     volumes:
       - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
@@ -38,7 +38,7 @@ services:
     container_name: c5-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
@@ -56,12 +56,12 @@ services:
     restart: unless-stopped
     environment:
       - INSTANCE_ID=ms1-1
-      - MQTT_BROKER=mosquitto
-      - MQTT_PORT=1883
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=$$share/grupo-ms1/alerts/panic/+
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_STREAM=alerts-stream
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
     depends_on:
       - mosquitto
       - redis
@@ -76,12 +76,12 @@ services:
     restart: unless-stopped
     environment:
       - INSTANCE_ID=ms1-2
-      - MQTT_BROKER=mosquitto
-      - MQTT_PORT=1883
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=$$share/grupo-ms1/alerts/panic/+
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_STREAM=alerts-stream
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
     depends_on:
       - mosquitto
       - redis
@@ -96,12 +96,12 @@ services:
     restart: unless-stopped
     environment:
       - INSTANCE_ID=ms1-3
-      - MQTT_BROKER=mosquitto
-      - MQTT_PORT=1883
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=$$share/grupo-ms1/alerts/panic/+
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_STREAM=alerts-stream
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
     depends_on:
       - mosquitto
       - redis
@@ -117,7 +117,7 @@ services:
     container_name: c5-ms3
     restart: unless-stopped
     environment:
-      - GRPC_PORT=50051
+      - GRPC_PORT=${MS3_GRPC_PORT}
     networks:
       - c5-network
 
@@ -131,19 +131,19 @@ services:
     container_name: c5-ms2
     restart: unless-stopped
     environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_STREAM=alerts-stream
-      - NOTIF_STREAM=notifications-stream
-      - CONSUMER_GROUP=ms2-group
-      - CONSUMER_NAME=ms2-consumer-1
-      - MS3_HOST=ms3
-      - MS3_PORT=50051
-      - PG_HOST=postgres-master
-      - PG_PORT=5432
-      - PG_DB=c5db
-      - PG_USER=postgres
-      - PG_PASSWORD=postgres
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
+      - NOTIF_STREAM=${NOTIF_STREAM}
+      - CONSUMER_GROUP=${MS2_CONSUMER_GROUP}
+      - CONSUMER_NAME=${MS2_CONSUMER_NAME}
+      - MS3_HOST=${MS3_HOST}
+      - MS3_PORT=${MS3_GRPC_PORT}
+      - PG_HOST=${PG_MASTER_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_DB=${POSTGRES_DB}
+      - PG_USER=${POSTGRES_USER}
+      - PG_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
       - redis
       - ms3
@@ -159,9 +159,9 @@ services:
     container_name: c5-postgres-master
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=c5db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
       - "5432:5432"
@@ -180,7 +180,7 @@ services:
     depends_on:
       - postgres-master
     entrypoint: >
-      bash -c " until pg_isready -h postgres-master -p 5432 -U postgres; do sleep 1; done; PGPASSWORD=postgres psql -h postgres-master -U postgres -c \"DO \\$\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='replicator') THEN CREATE ROLE replicator WITH REPLICATION LOGIN; END IF; END \\$\\$;\"; echo 'host replication replicator 0.0.0.0/0 trust' >> /var/lib/postgresql/data/pg_hba.conf; PGPASSWORD=postgres psql -h postgres-master -U postgres -c \"SELECT pg_reload_conf();\" "
+      bash -c " until pg_isready -h postgres-master -p 5432 -U ${POSTGRES_USER}; do sleep 1; done; PGPASSWORD=${POSTGRES_PASSWORD} psql -h postgres-master -U ${POSTGRES_USER} -c \"DO \\$\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='replicator') THEN CREATE ROLE replicator WITH REPLICATION LOGIN; END IF; END \\$\\$;\"; echo 'host replication replicator 0.0.0.0/0 trust' >> /var/lib/postgresql/data/pg_hba.conf; PGPASSWORD=${POSTGRES_PASSWORD} psql -h postgres-master -U ${POSTGRES_USER} -c \"SELECT pg_reload_conf();\" "
     volumes:
       - postgres-master-data:/var/lib/postgresql/data
     networks:
@@ -194,8 +194,8 @@ services:
     container_name: c5-postgres-replica
     restart: unless-stopped
     environment:
-      - PGUSER=postgres
-      - MASTER_HOST=postgres-master
+      - PGUSER=${POSTGRES_USER}
+      - MASTER_HOST=${PG_MASTER_HOST}
     ports:
       - "5433:5432"
     volumes:
@@ -217,14 +217,14 @@ services:
     container_name: c5-ms4
     restart: unless-stopped
     ports:
-      - "4000:4000"
+      - "${MS4_WS_PORT}:${MS4_WS_PORT}"
     environment:
-      - WS_PORT=4000
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - NOTIF_STREAM=notifications-stream
-      - CONSUMER_GROUP=ms4-group
-      - CONSUMER_NAME=ms4-consumer-1
+      - WS_PORT=${MS4_WS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - NOTIF_STREAM=${NOTIF_STREAM}
+      - CONSUMER_GROUP=${MS4_CONSUMER_GROUP}
+      - CONSUMER_NAME=${MS4_CONSUMER_NAME}
     depends_on:
       - redis
     networks:
@@ -240,14 +240,14 @@ services:
     container_name: c5-ms5
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "${MS5_PORT}:${MS5_PORT}"
     environment:
-      - PORT=5000
-      - PG_HOST=postgres-replica
-      - PG_PORT=5432
-      - PG_DB=c5db
-      - PG_USER=postgres
-      - PG_PASSWORD=postgres
+      - PORT=${MS5_PORT}
+      - PG_HOST=${PG_REPLICA_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_DB=${POSTGRES_DB}
+      - PG_USER=${POSTGRES_USER}
+      - PG_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
       - postgres-replica
     networks:
@@ -261,8 +261,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_MS4_URL=http://localhost:4000
-        - VITE_MS5_URL=http://localhost:5000
+        - VITE_MS4_URL=${VITE_MS4_URL}
+        - VITE_MS5_URL=${VITE_MS5_URL}
     container_name: c5-frontend
     restart: unless-stopped
     ports:
