@@ -1,0 +1,292 @@
+version: "3.9"
+
+networks:
+  c5-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  mosquitto-data:
+  mosquitto-log:
+  postgres-master-data:
+  postgres-replica-data:
+
+services:
+
+  # ─────────────────────────────────────────
+  # BROKER MQTT
+  # ─────────────────────────────────────────
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: c5-mosquitto
+    restart: unless-stopped
+    ports:
+      - "${MQTT_PORT}:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # REDIS
+  # ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: c5-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # MS1 — RECEPCIÓN DE ALERTAS (3 instancias)
+  # ─────────────────────────────────────────
+  ms1-1:
+    build:
+      context: ./services/ms1
+      dockerfile: Dockerfile
+    container_name: c5-ms1-1
+    restart: unless-stopped
+    environment:
+      - INSTANCE_ID=ms1-1
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_TOPIC=$$share/grupo-ms1/alerts/panic/+
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
+    depends_on:
+      - mosquitto
+      - redis
+    networks:
+      - c5-network
+
+  ms1-2:
+    build:
+      context: ./services/ms1
+      dockerfile: Dockerfile
+    container_name: c5-ms1-2
+    restart: unless-stopped
+    environment:
+      - INSTANCE_ID=ms1-2
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_TOPIC=$$share/grupo-ms1/alerts/panic/+
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
+    depends_on:
+      - mosquitto
+      - redis
+    networks:
+      - c5-network
+
+  ms1-3:
+    build:
+      context: ./services/ms1
+      dockerfile: Dockerfile
+    container_name: c5-ms1-3
+    restart: unless-stopped
+    environment:
+      - INSTANCE_ID=ms1-3
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_TOPIC=$$share/grupo-ms1/alerts/panic/+
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
+    depends_on:
+      - mosquitto
+      - redis
+    networks:
+      - c5-network
+  # ─────────────────────────────────────────
+  # MS3 — ASIGNACIÓN DE PRIORIDAD (servidor gRPC)
+  # ─────────────────────────────────────────
+  ms3:
+    build:
+      context: ./services/ms3
+      dockerfile: Dockerfile
+    container_name: c5-ms3
+    restart: unless-stopped
+    environment:
+      - GRPC_PORT=${MS3_GRPC_PORT}
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # MS2 — GEOLOCALIZACIÓN (consumidor Redis + cliente gRPC)
+  # ─────────────────────────────────────────
+  ms2:
+    build:
+      context: ./services/ms2
+      dockerfile: Dockerfile
+    container_name: c5-ms2
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_STREAM=${REDIS_STREAM}
+      - NOTIF_STREAM=${NOTIF_STREAM}
+      - CONSUMER_GROUP=${MS2_CONSUMER_GROUP}
+      - CONSUMER_NAME=${MS2_CONSUMER_NAME}
+      - MS3_HOST=${MS3_HOST}
+      - MS3_PORT=${MS3_GRPC_PORT}
+      - PG_HOST=${PG_MASTER_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_DB=${POSTGRES_DB}
+      - PG_USER=${POSTGRES_USER}
+      - PG_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - redis
+      - ms3
+      - postgres-master
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # POSTGRESQL MASTER (escrituras — MS2)
+  # ─────────────────────────────────────────
+  postgres-master:
+    image: postgres:16
+    container_name: c5-postgres-master
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-master-data:/var/lib/postgresql/data
+      - ./postgres/master/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: >
+      postgres -c listen_addresses=* -c wal_level=replica -c max_wal_senders=5 -c max_replication_slots=5 -c hot_standby=on
+    networks:
+      - c5-network
+
+  # Crea el rol de replicación una vez que el master está listo
+  postgres-master-setup:
+    image: postgres:16
+    container_name: c5-postgres-master-setup
+    depends_on:
+      - postgres-master
+    entrypoint: >
+      bash -c " until pg_isready -h postgres-master -p 5432 -U ${POSTGRES_USER}; do sleep 1; done; PGPASSWORD=${POSTGRES_PASSWORD} psql -h postgres-master -U ${POSTGRES_USER} -c \"DO \\$\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='replicator') THEN CREATE ROLE replicator WITH REPLICATION LOGIN; END IF; END \\$\\$;\"; echo 'host replication replicator 0.0.0.0/0 trust' >> /var/lib/postgresql/data/pg_hba.conf; PGPASSWORD=${POSTGRES_PASSWORD} psql -h postgres-master -U ${POSTGRES_USER} -c \"SELECT pg_reload_conf();\" "
+    volumes:
+      - postgres-master-data:/var/lib/postgresql/data
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # POSTGRESQL REPLICA (lecturas — MS5)
+  # ─────────────────────────────────────────
+  postgres-replica:
+    image: postgres:16
+    container_name: c5-postgres-replica
+    restart: unless-stopped
+    environment:
+      - PGUSER=${POSTGRES_USER}
+      - MASTER_HOST=${PG_MASTER_HOST}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-replica-data:/var/lib/postgresql/data
+      - ./postgres/replica/replica-entrypoint.sh:/replica-entrypoint.sh
+    entrypoint: [ "bash", "-c", "chmod +x /replica-entrypoint.sh && exec /replica-entrypoint.sh" ]
+    depends_on:
+      - postgres-master-setup
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # MS4 — NOTIFICACIONES (WebSocket)
+  # ─────────────────────────────────────────
+  ms4:
+    build:
+      context: ./services/ms4
+      dockerfile: Dockerfile
+    container_name: c5-ms4
+    restart: unless-stopped
+    ports:
+      - "${MS4_WS_PORT}:${MS4_WS_PORT}"
+    environment:
+      - WS_PORT=${MS4_WS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - NOTIF_STREAM=${NOTIF_STREAM}
+      - CONSUMER_GROUP=${MS4_CONSUMER_GROUP}
+      - CONSUMER_NAME=${MS4_CONSUMER_NAME}
+    depends_on:
+      - redis
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # MS5 — HISTORIAL (REST, lee desde réplica)
+  # ─────────────────────────────────────────
+  ms5:
+    build:
+      context: ./services/ms5
+      dockerfile: Dockerfile
+    container_name: c5-ms5
+    restart: unless-stopped
+    ports:
+      - "${MS5_PORT}:${MS5_PORT}"
+    environment:
+      - PORT=${MS5_PORT}
+      - PG_HOST=${PG_REPLICA_HOST}
+      - PG_PORT=${PG_PORT}
+      - PG_DB=${POSTGRES_DB}
+      - PG_USER=${POSTGRES_USER}
+      - PG_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres-replica
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # FRONTEND — Dashboard del Operador
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_MS4_URL=${VITE_MS4_URL}
+        - VITE_MS5_URL=${VITE_MS5_URL}
+    container_name: c5-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - ms4
+      - ms5
+    networks:
+      - c5-network
+
+  # ─────────────────────────────────────────
+  # NGINX
+  # ─────────────────────────────────────────
+  nginx:
+    image: nginx:latest
+    container_name: c5-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - ms1-1
+      - ms1-2
+      - ms1-3
+    networks:
+      - c5-network

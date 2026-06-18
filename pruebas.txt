@@ -1,0 +1,31 @@
+# ----------------- Prueba de Tolerancia a Fallos
+
+# Paso 1 — detén MS4 (notificaciones)
+docker compose stop ms4
+
+# Paso 2 — manda 3 alertas mientras MS4 está caído
+mosquitto_pub -h localhost -p 1883 -t "alerts/panic/ESP32-001" \
+  -m '{"device_id":"ESP32-001","lat":20.0553,"lon":-99.3455,"timestamp":1717300000,"emergency_type":"incendio","description":"prueba fallo 1"}'
+
+mosquitto_pub -h localhost -p 1883 -t "alerts/panic/ESP32-001" \
+  -m '{"device_id":"ESP32-001","lat":20.0553,"lon":-99.3455,"timestamp":1717300000,"emergency_type":"robo","description":"prueba fallo 2"}'
+
+mosquitto_pub -h localhost -p 1883 -t "alerts/panic/ESP32-001" \
+  -m '{"device_id":"ESP32-001","lat":20.0553,"lon":-99.3455,"timestamp":1717300000,"emergency_type":"ruido","description":"prueba fallo 3"}'
+
+# Paso 3 — evidencia: las alertas SÍ llegaron a PostgreSQL (MS2 sigue vivo)
+docker exec -it c5-postgres-master psql -U postgres -d c5db -c "SELECT id, emergency_type, priority FROM incidents ORDER BY id DESC LIMIT 3;"
+
+# Paso 4 — evidencia: están pendientes en el stream de notificaciones (nadie las consumió)
+docker exec -it c5-redis redis-cli XLEN notifications-stream
+docker exec -it c5-redis redis-cli XPENDING notifications-stream ms4-group
+
+# Paso 5 — reinicia MS4
+docker compose start ms4
+
+# Paso 6 — evidencia de recuperación: MS4 retoma los mensajes pendientes
+docker compose logs ms4 --tail=10
+
+
+# ----------------- Comunicacion grpc-------------------
+docker compose logs ms2 ms3 --tail=20

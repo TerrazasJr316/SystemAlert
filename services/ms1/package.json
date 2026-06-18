@@ -1,0 +1,13 @@
+{
+  "name": "ms1-recepcion",
+  "version": "1.0.0",
+  "description": "MS1 — Recepción de alertas C5",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.4",
+    "ioredis": "^5.3.2"
+  }
+}

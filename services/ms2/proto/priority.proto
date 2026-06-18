@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package c5.priority;
+
+// ─────────────────────────────────────────
+// Servicio expuesto por MS3 — consumido por MS2
+// ─────────────────────────────────────────
+service PriorityService {
+  // MS2 envía la alerta ya geolocalizada,
+  // MS3 responde con la clasificación de prioridad
+  rpc ClassifyAlert (AlertGeoRequest) returns (AlertPriorityResponse);
+}
+
+// ─────────────────────────────────────────
+// Mensaje que MS2 envía a MS3
+// Incluye los datos originales del ESP32 + la zona ya calculada
+// ─────────────────────────────────────────
+message AlertGeoRequest {
+  string device_id      = 1;
+  double lat             = 2;
+  double lon             = 3;
+  int64  timestamp       = 4;
+  string emergency_type  = 5;
+  string description     = 6;
+  string zone            = 7;   // calculado por MS2 (ej. "Norte", "Centro")
+  string stream_id       = 8;   // ID original del Redis Stream, para trazabilidad
+}
+
+// ─────────────────────────────────────────
+// Respuesta de MS3 a MS2
+// ─────────────────────────────────────────
+message AlertPriorityResponse {
+  string priority        = 1;   // "critico" | "alto" | "medio"
+  bool   success          = 2;
+  string error_message   = 3;   // vacío si success = true
+}

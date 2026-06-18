@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────
+   C5 Centro de Mando — Base layer overrides
+───────────────────────────────────────── */
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-void text-gray-200 font-sans text-sm antialiased;
+  }
+
+  ::selection {
+    @apply bg-accent-blue/20;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-accent-blue outline-offset-2;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border-subtle rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+@layer components {
+  /* Priority pill badges */
+  .priority-pill {
+    @apply text-[10px] font-semibold px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1;
+  }
+  .priority-pill--critico {
+    @apply bg-priority-critico-dim text-priority-critico;
+  }
+  .priority-pill--alto {
+    @apply bg-priority-alto-dim text-priority-alto;
+  }
+  .priority-pill--medio {
+    @apply bg-priority-medio-dim text-priority-medio;
+  }
+
+  /* Glass card effect */
+  .glass-card {
+    @apply bg-panel/80 backdrop-blur-xl border border-border-hairline rounded-xl;
+  }
+}
+
+/* ─────────────────────────────────────────
+   Leaflet overrides for dark theme
+───────────────────────────────────────── */
+.leaflet-container {
+  background: #0a0e13 !important;
+}
+.leaflet-tooltip {
+  background: #1a2332 !important;
+  border: 1px solid #2a3a4e !important;
+  color: #e5e7eb !important;
+  border-radius: 10px !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+.leaflet-tooltip::before {
+  display: none !important;
+}
+.leaflet-control-zoom a {
+  background: #1a2332 !important;
+  color: #e5e7eb !important;
+  border-color: #2a3a4e !important;
+}
+.leaflet-control-zoom a:hover {
+  background: #212d3d !important;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
