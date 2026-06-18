@@ -94,7 +94,7 @@ docker-compose down
 | Servicio | URL | Puerto |
 |----------|-----|--------|
 | **Dashboard** | http://localhost:5173 | 5173 |
-| **API (MS5)** | http://localhost:5000 | 5000 |
+| **API (MS5)** | http://localhost:5000 | 8080 |
 | **WebSocket (MS4)** | ws://localhost:5004 | 5004 |
 | **MQTT** | mosquitto:1883 | 1883 |
 | **PostgreSQL** | localhost:5432 | 5432 |
@@ -107,8 +107,8 @@ docker-compose down
 **Lee primero:** [docs/README.md](./docs/README.md)
 
 Luego accede a:
-- 🖥️ **[Frontend](./docs/frontend/README.md)** - Dashboard y mapas
-- ⚙️ **[Backend](./docs/backend/README.md)** - Microservicios (MS1-MS5)
-- 📨 **[MQTT](./docs/broker/README.md)** - Broker y dispositivos
+- 🖥️ **[Frontend](./docs/frontend/README.md)** - Dashboard
+- ⚙️ **[Backend](./docs/backend/README.md)** - Microservicios
+- 📨 **[MQTT](./docs/broker/README.md)** - Broker y IoT
 - 🚀 **[Comandos Rápidos](./docs/QUICK_REFERENCE.md)** - Copy-paste listos
-- 🔧 **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Solucionar problemas
+- 🔧 **[Troubleshooting](./docs/TROUBLESHOOTING.md)** - Solución de problemas
