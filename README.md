@@ -17,24 +17,15 @@ Necesitábamos una forma de:
 
 ---
 
-## 🛠️ Tecnologías
+## 🛠️ Diagrama de Arquitectura
 
-| Capa | Herramientas |
-|------|--------------|
-| **Frontend** | React + Vite + Leaflet (mapas) |
-| **Backend** | Node.js (MS1, MS4, MS5) + Python (MS2, MS3) |
-| **Broker IoT** | Mosquitto MQTT |
-| **Persistencia** | PostgreSQL (Master/Replica) + Redis Streams |
-| **Comunicación** | gRPC + WebSocket + REST |
-| **Orquestación** | Docker Compose + Nginx |
-
----
+![diagrama](src/Diagrama%20de%20arquitectura.png)
 
 ## 📁 Estructura del Proyecto
 
 ```
 SystemAlert/
-├── docs/                          # 📚 DOCUMENTACIÓN COMPLETA (¡EMPEZAR AQUÍ!)
+├── docs/                          # DOCUMENTACIÓN COMPLETA (¡EMPEZAR AQUÍ!)
 │   ├── README.md                  # Guía general
 │   ├── QUICK_REFERENCE.md         # Comandos útiles
 │   ├── TROUBLESHOOTING.md         # Solución de problemas
@@ -42,11 +33,11 @@ SystemAlert/
 │   ├── backend/                   # Doc de Microservicios
 │   └── broker/                    # Doc de MQTT
 │
-├── esp32/                         # 📱 Código para dispositivos IoT
+├── esp32/                         # Código para dispositivos IoT
 │   ├── esp32_001/
 │   └── esp32_002/
 │
-├── frontend/                      # 🖥️ DASHBOARD (React)
+├── frontend/                      # DASHBOARD (React)
 │   ├── src/
 │   │   ├── components/            # Mapa, Feed, Historial, etc.
 │   │   ├── App.jsx
@@ -54,25 +45,25 @@ SystemAlert/
 │   ├── package.json
 │   └── vite.config.js
 │
-├── services/                      # ⚙️ MICROSERVICIOS
+├── services/                      # MICROSERVICIOS
 │   ├── ms1/                       # Recepción (Node.js)
 │   ├── ms2/                       # Geolocalización (Python)
 │   ├── ms3/                       # Prioridad (Node.js)
 │   ├── ms4/                       # Notificaciones (Node.js)
 │   └── ms5/                       # Historial/API (Node.js)
 │
-├── mosquitto/                     # 📨 BROKER MQTT
+├── mosquitto/                     # BROKER MQTT
 │   └── config/
 │       └── mosquitto.conf
 │
-├── postgres/                      # 🗄️ BASE DE DATOS
+├── postgres/                      # BASE DE DATOS
 │   ├── master/
 │   └── replica/
 │
-├── nginx/                         # ⚖️ LOAD BALANCER
+├── nginx/                         # LOAD BALANCER
 │   └── nginx.conf
 │
-├── docker-compose.yml             # 🐳 ORQUESTACIÓN
+├── docker-compose.yml             # ORQUESTACIÓN
 ├── README.md                      # Este archivo
 └── CONTRIBUTING.md                # Guía de contribución
 ```
